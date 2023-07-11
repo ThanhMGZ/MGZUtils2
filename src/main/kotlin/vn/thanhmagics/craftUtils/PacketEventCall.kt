@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import vn.thanhmagics.craftUtils.event.PlayerPacketEvent
 import vn.thanhmagics.craftUtils.item.Event_v2
 import java.lang.reflect.Field
+import java.util.UUID
 
 
 class PacketEventCall {
@@ -24,11 +25,16 @@ class PacketEventCall {
             val channel: Channel = getNetworkManager((player as CraftPlayer).handle.b).m
             channel.eventLoop().submit {
                 channel.pipeline().remove(player.getName())
-                null
             }
+            addedPlayer.remove(player.uniqueId)
         }
 
+        private val addedPlayer : MutableList<UUID> = ArrayList()
+
         fun addPlayer(player: Player) {
+            if (addedPlayer.contains(player.uniqueId))
+                return
+            addedPlayer.add(player.uniqueId)
             val channelDuplexHandler: ChannelDuplexHandler = object : ChannelDuplexHandler() {
 
                 @Throws(java.lang.Exception::class)

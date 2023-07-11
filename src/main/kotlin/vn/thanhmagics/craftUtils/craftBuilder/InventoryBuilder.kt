@@ -86,7 +86,8 @@ class InventoryBuilder(title : String, size : Int, private val plugin : Plugin) 
     }
 
     fun open(player : Player?) {
-        player?.openInventory(inventory)
+        PlayerData.getPlayerData()[player!!.uniqueId]!!.setInventory(uuid)
+        player.openInventory(inventory)
     }
 
 }

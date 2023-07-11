@@ -49,7 +49,7 @@ open class PlayerData(uuid: UUID) : Serializable {
         return this.inventory
     }
 
-    fun setInventory(inventory: UUID) {
+    fun setInventory(inventory: UUID?) {
         this.inventory = inventory
     }
 
