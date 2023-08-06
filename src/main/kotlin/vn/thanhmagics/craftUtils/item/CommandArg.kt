@@ -7,17 +7,17 @@ abstract class CommandArg(argValue: Int, nameValue: String) {
 
     private val argField: Int = argValue
     private val nameField: String = nameValue
-    lateinit var player: PlayerData
+    private var player: Player? = null
 
     abstract fun run()
 
-    fun getPlayerData(): PlayerData {
-        return player
+    fun getPlayer(): Player {
+        return player!!
     }
 
     fun setPlayer(player: Player) {
         //this.player = getPlayerData().getValue(player.uniqueId)!!
-        this.player = PlayerData.getPlayerData()[player.uniqueId]!!
+        this.player = player
     }
 
     fun getArgValue(): Int {

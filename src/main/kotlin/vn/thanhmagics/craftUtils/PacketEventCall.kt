@@ -3,10 +3,11 @@ package vn.thanhmagics.craftUtils
 import io.netty.channel.*
 import net.minecraft.network.NetworkManager
 import net.minecraft.server.network.PlayerConnection
+import org.bukkit.Bukkit
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer
 import org.bukkit.entity.Player
+import org.bukkit.event.block.BlockBreakEvent
 import vn.thanhmagics.craftUtils.event.PlayerPacketEvent
-import vn.thanhmagics.craftUtils.item.Event_v2
 import java.lang.reflect.Field
 import java.util.UUID
 
@@ -39,9 +40,9 @@ class PacketEventCall {
 
                 @Throws(java.lang.Exception::class)
                 override fun channelRead(channelHandlerContext: ChannelHandlerContext?, packet: Any) {
-                    val event = PlayerPacketEvent(packet,player)
-                    Event_v2.callEvent(event)
-                    if (event.isCancel())
+                    val event = PlayerPacketEvent(player,packet)
+                    Bukkit.getPluginManager().callEvent(event)
+                    if (event.isCancelled)
                         return
                     super.channelRead(channelHandlerContext, packet)
                 }
@@ -52,9 +53,9 @@ class PacketEventCall {
                     packet: Any,
                     channelPromise: ChannelPromise,
                 ) {
-                    val event = PlayerPacketEvent(packet,player)
-                    Event_v2.callEvent(event)
-                    if (event.isCancel())
+                    val event = PlayerPacketEvent(player,packet)
+                    Bukkit.getPluginManager().callEvent(event)
+                    if (event.isCancelled)
                         return
                     super.write(channelHandlerContext, packet, channelPromise)
                 }

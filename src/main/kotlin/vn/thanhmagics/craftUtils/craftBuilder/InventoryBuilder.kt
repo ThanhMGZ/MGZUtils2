@@ -1,64 +1,74 @@
 package vn.thanhmagics.craftUtils.craftBuilder
 
 import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.plugin.Plugin
-import vn.thanhmagics.utils.ListenerUtils
-import vn.thanhmagics.utils.PlayerData
-import vn.thanhmagics.utils.ZUtils
+import vn.thanhmagics.utils.*
 import java.util.UUID
 
-class InventoryBuilder(title : String, size : Int, private val plugin : Plugin) {
+class InventoryBuilder<P : PlayerData>(title : String, size : Int, private val plugin : Plugin,private val playerMap : MutableMap<UUID,P>) {
 
     private var inventory : Inventory = Bukkit.createInventory(null,size,ZUtils.applyColor(title))
 
-    private val uuid = UUID.randomUUID()
+    private var uuid = UUID.randomUUID()
 
     private var cancelOnClick : Boolean = true
 
-    private val actionItem : MutableMap<Int,Runnable> = HashMap()
+    private val leftClickAction : MutableMap<Int,Runnable> = HashMap()
 
-    private val actionItemWithSign : MutableMap<Int,SignGUIBuilder> = HashMap()
+    private val rightClickAction : MutableMap<Int,Runnable> = HashMap()
 
     init {
         object : ListenerUtils<InventoryClickEvent>(plugin) {
             override fun onEvent(e: InventoryClickEvent) {
-                val data = PlayerData.getPlayerData()[(e.whoClicked as Player).uniqueId]!!
+                val data = playerMap[(e.whoClicked as Player).uniqueId]!!
                 if (data.getInventory() != null) {
                     if (data.getInventory()!! == uuid) {
                         e.isCancelled = cancelOnClick
-                        if (actionItem.containsKey(e.slot)) {
-                            actionItem[e.slot]!!.run()
-                        } else if (actionItemWithSign.containsKey(e.slot)) {
-                            e.whoClicked.closeInventory()
-                            actionItemWithSign[e.slot]!!.open(e.whoClicked as Player)
+                        if (leftClickAction.containsKey(e.slot) || rightClickAction.containsKey(e.slot)) {
+                            if (e.click == ClickType.RIGHT) {
+                                rightClickAction[e.slot]!!.run()
+                            } else if (e.click == ClickType.LEFT) {
+                                leftClickAction[e.slot]!!.run()
+                            }
                         }
                     }
                 }
             }
-
-            override val handlerList: HandlerList
-                get() = InventoryClickEvent.getHandlerList()
         }
     }
 
-    fun addActionItemWithSignEdit(slot : Int,item: ItemBuilder?,sign : SignGUIBuilder) : InventoryBuilder {
+    fun addItemAction(slot: Int,item: ItemBuilder?,leftClick: Runnable,rightClick : Runnable) : InventoryBuilder<P> {
         inventory.setItem(slot,item!!.build())
-        actionItemWithSign[slot] = sign
+        leftClickAction[slot] = leftClick
+        rightClickAction[slot] = rightClick
         return this
     }
 
-    fun addActionItem(slot : Int,item: ItemBuilder?, onClick : Runnable) : InventoryBuilder {
+    fun addItemActionLeftClick(slot: Int,item: ItemBuilder?,leftClick: Runnable) : InventoryBuilder<P> {
         inventory.setItem(slot,item!!.build())
-        actionItem[slot] = onClick
+        leftClickAction[slot] = leftClick
         return this
     }
 
-    fun addDecoItem(item : ItemBuilder?,vararg slot : Int) : InventoryBuilder {
+    fun addItemActionRightClick(slot: Int,item: ItemBuilder?,rightClick : Runnable) : InventoryBuilder<P> {
+        inventory.setItem(slot,item!!.build())
+        rightClickAction[slot] = rightClick
+        return this
+    }
+
+    fun addItemAction(slot: Int,item: ItemBuilder?,runnable : Runnable) : InventoryBuilder<P> {
+        inventory.setItem(slot,item!!.build())
+        leftClickAction[slot] = runnable
+        rightClickAction[slot] = runnable
+        return this
+    }
+
+    fun addDecoItem(item : ItemBuilder?,vararg slot : Int) : InventoryBuilder<P> {
         if (item == null)
             return this
         val itemStack = item.build()
@@ -68,7 +78,7 @@ class InventoryBuilder(title : String, size : Int, private val plugin : Plugin) 
         return this
     }
 
-    fun setCancelOnClick(boolean: Boolean) : InventoryBuilder {
+    fun setCancelOnClick(boolean: Boolean) : InventoryBuilder<P> {
         this.cancelOnClick = boolean
         return this;
     }
@@ -77,17 +87,15 @@ class InventoryBuilder(title : String, size : Int, private val plugin : Plugin) 
         return inventory
     }
 
-    fun getItemAction() : MutableMap<Int,Runnable> {
-        return actionItem
+
+
+    fun open(player : PlayerData,plugin: Plugin) {
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            player.getPlayer()!!.closeInventory()
+            player.setInventory(uuid)
+            player.getPlayer()!!.openInventory(inventory)
+        })
     }
 
-    fun getItemActionWithSign() : MutableMap<Int,SignGUIBuilder> {
-        return actionItemWithSign
-    }
-
-    fun open(player : Player?) {
-        PlayerData.getPlayerData()[player!!.uniqueId]!!.setInventory(uuid)
-        player.openInventory(inventory)
-    }
 
 }

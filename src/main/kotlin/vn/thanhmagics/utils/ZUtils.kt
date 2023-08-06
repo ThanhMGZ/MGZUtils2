@@ -33,7 +33,7 @@ class ZUtils {
             return rs
         }
 
-        inline fun <reified T> getGenericName(superclassType : Type) : String? {
+        fun getGenericName(superclassType : Type) : String? {
            // val superclassType: Type = object : generictor<T>() {}.javaClass.genericSuperclass
             if (superclassType is ParameterizedType) {
                 val typeArguments: Array<Type> = superclassType.actualTypeArguments

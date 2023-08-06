@@ -1,34 +1,38 @@
 package vn.thanhmagics.craftUtils.event
 
-import net.minecraft.network.protocol.Packet
-import net.minecraft.network.protocol.game.PacketListenerPlayOut
 import org.bukkit.entity.Player
-import vn.thanhmagics.craftUtils.item.Event_v2
-import vn.thanhmagics.utils.ListenerUtils_v2
+import org.bukkit.event.Cancellable
+import org.bukkit.event.Event
+import org.bukkit.event.HandlerList
+import vn.thanhmagics.utils.PlayerData
 
-class PlayerPacketEvent(private val packet: (Any), private val player: Player) : Event_v2 {
+class PlayerPacketEvent(player: Player, any: Any) : Event(), Cancellable{
+    private val handlers = HandlerList()
 
-    private var cancel : Boolean = false
+    private var canncel = false
 
-    fun cancelEvent() {
-        this.cancel = true
-    }
+    private var player : Player? = player
+
+    private var packet : Any? = any
 
     fun getPlayer() : Player {
-        return player
-    }
-
-    fun isCancel() : Boolean {
-        return cancel
+        return player!!
     }
 
     fun getPacket() : Any {
-        return packet
+        return packet!!
     }
 
-    override fun run() {
-        for (e in Event_v2.getHandlerList(javaClass.name)) {
-            (e as ListenerUtils_v2<PlayerPacketEvent>).onEvent(this)
-        }
+    override fun getHandlers(): HandlerList {
+        return handlers
     }
+
+    override fun isCancelled(): Boolean {
+        return canncel
+    }
+
+    override fun setCancelled(p0: Boolean) {
+        this.canncel = p0
+    }
+
 }

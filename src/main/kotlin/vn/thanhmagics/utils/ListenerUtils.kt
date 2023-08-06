@@ -8,9 +8,10 @@ import org.bukkit.plugin.Plugin
 
 abstract class ListenerUtils<E : Event>(plugin: Plugin) : Listener {
     abstract fun onEvent(e: E)
-    abstract val handlerList: HandlerList
 
     init {
+        val clazz = Class.forName(ZUtils.getGenericName(javaClass.genericSuperclass))
+        val handlerList : HandlerList = (clazz.methods[0].invoke(null) as HandlerList?)!!
         for ((_, value) in plugin.pluginLoader.createRegisteredListeners(this, plugin)) {
             handlerList.registerAll(value!!)
         }

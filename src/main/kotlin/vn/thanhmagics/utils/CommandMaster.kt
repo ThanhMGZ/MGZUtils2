@@ -6,28 +6,22 @@ import org.bukkit.craftbukkit.v1_19_R3.CraftServer
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import vn.thanhmagics.craftUtils.item.CommandArg
-import vn.thanhmagics.craftUtils.item.CommandArg_v2
 import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class CommandMaster(name: String,plugin: Plugin) : Command(name) {
     private val command : String = name
     private val commandArgs : MutableList<CommandArg> = ArrayList()
-    private val commandArgs_v2 : MutableList<CommandArg_v2> = ArrayList()
     private lateinit var player : PlayerData
     val plugin : Plugin = plugin
 
     init {
-        val craftServer : CraftServer = plugin.server as CraftServer;
-        craftServer.commandMap.register("MGZUtils2",this);
+        val cs : CraftServer = (plugin.server as CraftServer)
+        cs.commandMap.register("MGZUtils2",this);
     }
 
     fun addArg(vararg commands : CommandArg) {
         this.commandArgs.addAll(commands);
-    }
-
-    fun addArg_v2(vararg commands : CommandArg_v2) {
-        this.commandArgs_v2.addAll(commands)
     }
 
     abstract fun onCommand(player : Player)
@@ -51,11 +45,6 @@ abstract class CommandMaster(name: String,plugin: Plugin) : Command(name) {
             onCommand(p)
             return true
         } else {
-            this.player = PlayerData.getPlayerData().getValue(p.uniqueId)
-            for (cm in commandArgs_v2) {
-                cm.setPlayer(player)
-                cm.run()
-            }
             if (p1.equals(command, ignoreCase = true)) {
                 val list = sortCommandArg(size)
                 if (list.isEmpty()) {
