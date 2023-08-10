@@ -40,6 +40,7 @@ class InventoryBuilder<P : PlayerData>(title : String, size : Int, private val p
                 }
             }
         }
+
     }
 
     fun addItemAction(slot: Int,item: ItemBuilder?,leftClick: Runnable,rightClick : Runnable) : InventoryBuilder<P> {
